@@ -1,0 +1,15 @@
+credentials:
+  usernames:
+    smriti:
+      email: smriti@demo.com
+      name: smriti
+      password: smriti123
+
+cookie:
+  expiry_days: 20
+  key: aiinterviewcoach_key
+  name: aiinterviewcoach_cookie
+
+preauthorized:
+  emails:
+    - smriti@demo.com
