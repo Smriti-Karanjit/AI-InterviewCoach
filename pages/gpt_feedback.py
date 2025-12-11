@@ -2,7 +2,7 @@ from groq import Groq
 import json
 
 # Your GROQ API key
-client = Groq(api_key="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")
+client = Groq(api_key="dummy")
 
 # -------------------------------------------------------------
 #  FEEDBACK BASED ON PROSODIC BEHAVIORAL TRAIT SCORES
