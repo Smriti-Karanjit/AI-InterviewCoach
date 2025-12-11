@@ -1,64 +1,48 @@
 import streamlit as st
-import json
 from Theme import apply_theme, add_sidebar_navigation, require_login
-from question_loader import QUESTIONS
+from question_loader import load_questions_for_role
 
-# ---------------- APPLY THEME FIRST ----------------
 apply_theme()
-
-# ---------------- SESSION INIT (IMPORTANT) ----------------
 if "user" not in st.session_state:
     st.session_state.user = None
-
-# ---------------- REQUIRE LOGIN ----------------
 require_login()
-
-# ---------------- LOAD SIDEBAR ----------------
 add_sidebar_navigation()
 
-# ---------------- LOAD QUESTIONS ----------------
-question_bank = QUESTIONS
-
-# ---------------- VALIDATION ----------------
+# Validation
 required_keys = ["role", "experience", "difficulty", "question_mode"]
-
-for key in required_keys:
-    if key not in st.session_state or st.session_state[key] is None:
+for k in required_keys:
+    if k not in st.session_state or st.session_state[k] is None:
         st.error("Please complete previous steps first.")
         st.stop()
 
 role = st.session_state.role
 experience = st.session_state.experience
 difficulty = st.session_state.difficulty
-qmode = st.session_state.question_mode
+mode = st.session_state.question_mode
 
-# ---------------- FILTER QUESTIONS ----------------
+# Load role-specific questions
+question_bank = load_questions_for_role(role)
+
+# Filter
 filtered = [
     q for q in question_bank
-    if q["role"].lower() == role.lower()
-    and q["experience"].lower() == experience.lower()
-    and q["difficulty"].lower() == difficulty.lower()
-    and q["source_type"].lower() == qmode.lower()
+    if q["experience"].lower() == experience.lower()
+    and q.get("difficulty", "").lower() == difficulty.lower()
+    and q.get("source_type", "").lower() == mode.lower()
 ]
 
 if not filtered:
     st.warning("⚠ No questions found for this selection.")
     st.stop()
 
-questions = [q["question"] for q in filtered]
+# Save for next page
+st.session_state.filtered_questions = filtered
 
-# ---------------- PAGE HEADER ----------------
-st.markdown("## Select a Question to Practice")
+st.markdown("## Select a Question")
 
-# ---------------- QUESTION LIST ----------------
-for i, q in enumerate(questions):
+for i, q in enumerate(filtered):
+    preview = q["question"][:150] + "..." if len(q["question"]) > 150 else q["question"]
 
-    text = q if len(q) <= 150 else q[:150] + "..."
-
-    if st.button(f"Q{i+1}: {text}", key=f"qbtn_{i}", use_container_width=True):
-
-        # Save selected index into session
-        st.session_state.selected_question_index = i  
-
-        # Navigate to Practice One page
+    if st.button(f"Q{i+1}: {preview}", key=f"q{i}", use_container_width=True):
+        st.session_state.selected_question_index = i
         st.switch_page("pages/Practice_one.py")

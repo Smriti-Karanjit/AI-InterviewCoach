@@ -1,17 +1,12 @@
 import streamlit as st
-import json
 import tempfile
 import pandas as pd
 
-# THEME + SIDEBAR (NO LOGIN ENFORCEMENT)
+# THEME + SIDEBAR
 from Theme import apply_theme, add_sidebar_navigation  
-
-# MODEL / PROCESSING
 from prosody_extractor import extract_prosodic_features
 from model_loader import predict_traits_from_prosody
 from database import save_interview_result
-
-# GPT FEEDBACK GENERATION
 from pages.gpt_feedback import generate_prosody_feedback, generate_text_feedback
 
 
@@ -22,7 +17,7 @@ apply_theme()
 add_sidebar_navigation()
 
 # -------------------------------------------------
-# SAFE USER HANDLING (no crash if user is None)
+# SAFE USER HANDLING
 # -------------------------------------------------
 user_data = st.session_state.get("user") or {}
 username = user_data.get("username", "Guest")
@@ -35,37 +30,23 @@ if "selected_question_index" not in st.session_state:
     st.error("Please select a question first.")
     st.stop()
 
-if "role" not in st.session_state:
-    st.error("Incomplete flow. Please start again.")
+if "filtered_questions" not in st.session_state:
+    st.error("Missing question data. Please go back.")
     st.stop()
 
 
-# -------------------------------------------------
-# LOAD QUESTIONS
-# -------------------------------------------------
-@st.cache_data
-def load_questions():
-    with open("data/hr_interview_questions_dataset.json", "r", encoding="utf-8") as f:
-        return json.load(f)
+questions = st.session_state.filtered_questions
+idx = st.session_state.selected_question_index
 
-question_bank = load_questions()
+if idx >= len(questions):
+    st.error("Invalid question index. Restart practice.")
+    st.stop()
 
+current_question = questions[idx]["question"]
 role = st.session_state.role
 experience = st.session_state.experience
 difficulty = st.session_state.difficulty
 qmode = st.session_state.question_mode
-idx = st.session_state.selected_question_index
-
-filtered = [
-    q for q in question_bank
-    if q["role"].lower() == role.lower()
-    and q["experience"].lower() == experience.lower()
-    and q["difficulty"].lower() == difficulty.lower()
-    and q["source_type"].lower() == qmode.lower()
-]
-
-questions = [q["question"] for q in filtered]
-current_question = questions[idx]
 
 
 # -------------------------------------------------
@@ -120,7 +101,7 @@ def save_temp_audio(uploaded_file):
 
 
 # -------------------------------------------------
-# SUBMIT ANSWER
+# SUBMIT ANSWER BUTTON
 # -------------------------------------------------
 if st.button("Submit Answer", use_container_width=True):
 
@@ -130,27 +111,23 @@ if st.button("Submit Answer", use_container_width=True):
 
     st.session_state.last_answer = user_text
 
-    prosody_series = None
     prosody_features = {}
     trait_scores = {}
 
     # -------------------- VOICE ANALYSIS --------------------
     if audio_input:
         st.info("⏳ Extracting prosodic features…")
-
         audio_path = save_temp_audio(audio_input)
         prosody_series = extract_prosodic_features(audio_path)
         prosody_features = prosody_series.to_dict()
 
         st.success("🎯 Voice features extracted!")
-
-        # Predict Traits
         trait_scores = predict_traits_from_prosody(prosody_series)
 
-    # -------------------- DISPLAY NUMERIC SCORES --------------------
-    clarity_score = trait_scores.get("Overall", 0)          # already 0–100
-    confidence_score = trait_scores.get("NotStressed", 0)   # already 0–100
-    fluency_score = trait_scores.get("Calm", 0)             # already 0–100
+    # -------------------- NUMERIC SCORES --------------------
+    clarity_score = trait_scores.get("Overall", 0)
+    confidence_score = trait_scores.get("NotStressed", 0)
+    fluency_score = trait_scores.get("Calm", 0)
 
     st.markdown("## 📊 Model Trait Scores")
     st.write(f"### 🔹 Clarity: `{clarity_score:.1f}%`")
@@ -163,52 +140,33 @@ if st.button("Submit Answer", use_container_width=True):
 
     # -------------------- GPT FEEDBACK --------------------
     if trait_scores:
-        st.info("🧠 Generating voice-based communication feedback…")
         pf = generate_prosody_feedback(trait_scores)
-
         st.markdown("## 🗣️ Voice-Based Communication Feedback")
         st.write("### Summary")
         st.write(pf.get("summary", ""))
-
         st.write("### Strengths")
-        for s in pf.get("strengths", []):
-            st.write(f"- {s}")
-
+        st.write("\n".join(f"- {s}" for s in pf.get("strengths", [])))
         st.write("### Areas to Improve")
-        for s in pf.get("improvements", []):
-            st.write(f"- {s}")
-
+        st.write("\n".join(f"- {s}" for s in pf.get("improvements", [])))
         st.write("### Actionable Tips")
-        for s in pf.get("action_items", []):
-            st.write(f"- {s}")
+        st.write("\n".join(f"- {s}" for s in pf.get("action_items", [])))
 
-    # Text Feedback
     if user_text:
-        st.info("🧠 Analyzing your written answer…")
         tf = generate_text_feedback(user_text)
-
         st.markdown("## 📝 Text-Based Feedback")
         st.write("### Summary")
         st.write(tf.get("summary", ""))
-
         st.write("### Strengths")
-        for s in tf.get("strengths", []):
-            st.write(f"- {s}")
-
+        st.write("\n".join(f"- {s}" for s in tf.get("strengths", [])))
         st.write("### Improvements")
-        for s in tf.get("improvements", []):
-            st.write(f"- {s}")
-
+        st.write("\n".join(f"- {s}" for s in tf.get("improvements", [])))
         st.write("### Missing Points")
-        for s in tf.get("missing_points", []):
-            st.write(f"- {s}")
-
+        st.write("\n".join(f"- {s}" for s in tf.get("missing_points", [])))
         st.write(f"### Score: **{tf.get('score', '?')}/10**")
 
-
-    # -------------------- SAVE DATA (SAFE) --------------------
+    # -------------------- SAVE TO DB --------------------
     save_interview_result({
-        "username": username,        # SAFE FIX
+        "username": username,
         "question": current_question,
         "role": role,
         "experience": experience,
@@ -219,22 +177,13 @@ if st.button("Submit Answer", use_container_width=True):
         "prosodic_features": prosody_features
     })
 
-
-    # -------------------- TRACK COMPLETED --------------------
-    if "completed_questions" not in st.session_state:
-        st.session_state.completed_questions = set()
-
-    st.session_state.completed_questions.add(idx)
-
-    # NEXT QUESTION
-    if idx < len(questions) - 1:
-        st.success("Answer saved! Moving to the next question… ⏭️")
+    # -------------------- NEXT QUESTION --------------------
+    if idx + 1 < len(questions):
         st.session_state.selected_question_index = idx + 1
         st.rerun()
-
     else:
         st.balloons()
-        st.success("🎉 You've completed all practice questions!")
+        st.success("🎉 You've completed all questions!")
 
 
 # -------------------------------------------------
