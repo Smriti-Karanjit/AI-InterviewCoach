@@ -1,0 +1,7 @@
+bcryptstreamlit
+firebase-admin
+bcrypt
+python-dotenv
+requests
+pyrebase4
+pydub
