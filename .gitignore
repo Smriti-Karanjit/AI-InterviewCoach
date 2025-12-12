@@ -17,6 +17,7 @@ venv/
 ENV/
 env/
 audioenv/
+.history/
 
 # SQLite databases
 *.sqlite
