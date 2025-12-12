@@ -1,5 +1,146 @@
+# ================================
+# PYTHON
+# ================================
 __pycache__/
-.history/
 *.pyc
-*.tmp
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+build/
+dist/
+
+# Virtual environments
+.env
+.venv
+venv/
+ENV/
+env/
+audioenv/
+
+# SQLite databases
+*.sqlite
+
+
+# ================================
+# STREAMLIT
+# ================================
+.streamlit/secrets.toml
+.streamlit/config.toml
+.streamlit/cache/
+.streamlit/credentials.json
+
+
+# ================================
+# SECRETS & KEYS
+# ================================
+# Firebase admin key files
+firebase_admin_key.json
+firebase_key.json
+serviceAccountKey.json
+firebase-adminsdk.json
+firebase_credentials.json
+
+# Match any firebase-like key
+*firebase*key*.json
+*service*account*.json
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+
+# ================================
+# DATA FILES
+# ================================
+# Raw datasets
+data/
+datasets/
+*.csv
+*.json
+*.parquet
+*.npy
+*.npz
+*.zip
+*.tar
+*.gz
+
+# Allow only STRUCTURED SMALL JSON (optional):
+#!data/*.json
+
+
+# ================================
+# AUDIO & VIDEO FILES
+# ================================
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.ogg
+
+# Folders where your app stores audio
+audio/
+user_audio/
+recordings/
+temp_audio/
+
+
+# ================================
+# MODEL WEIGHTS (TOO LARGE FOR GIT)
+# ================================
+models/
+model/
+saved_models/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.h5
+*.tflite
+
+
+# ================================
+# TEMP, LOGS, & CACHE
+# ================================
+logs/
 *.log
+tmp/
+temp/
+temp_files/
+cache/
+__temp__/
+
+
+# ================================
+# NODE / FRONTEND (if added later)
+# ================================
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+
+# ================================
+# IDE / EDITOR
+# ================================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+
+# ================================
+# OS FILES
+# ================================
+.DS_Store
+Thumbs.db
+
+
+# ================================
+# IMAGES (GENERATED OR TEMP)
+# ================================
+generated/
+screenshots/
+*.tmp.png
+*.tmp.jpg
