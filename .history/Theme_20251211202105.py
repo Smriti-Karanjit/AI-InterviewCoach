@@ -1,47 +1,20 @@
 import streamlit as st
 import base64
-
-# ---------------- LOCAL STORAGE PERSISTENCE ----------------
-
-# Restore user from browser localStorage
-restore_user_js = """
-<script>
-const saved = window.localStorage.getItem("aicoach_user");
-if (saved) {
-    const parsed = JSON.parse(saved);
-    window.parent.postMessage({type: "restore_user", user: parsed}, "*");
-}
-</script>
-"""
-st.markdown(restore_user_js, unsafe_allow_html=True)
-
-# Handle restored user message
-if "_msg" not in st.session_state:
-    st.session_state._msg = {}
-
-def handle_restore():
-    msg = st.session_state.get("_msg")
-    if msg and msg.get("type") == "restore_user":
-        st.session_state.user = msg.get("user")
-
-handle_restore()
-
-
 # ---------------- TOP NAVBAR ----------------
-
 def load_base64_image(path):
     with open(path, "rb") as f:
         return base64.b64encode(f.read()).decode()
-
+    
 def add_top_nav():
+    
     """Sticky top navigation bar with logo, links, and logout."""
 
-    # Navbar should only show if user exists
     if "user" not in st.session_state or st.session_state.user is None:
         return
 
     # Navbar CSS
-    st.markdown("""
+    st.markdown(
+        """
         <style>
         .top-nav {
             position: fixed;
@@ -57,14 +30,21 @@ def add_top_nav():
             justify-content: space-between;
             align-items: center;
         }
-        .nav-left { display: flex; align-items: center; gap: 14px; }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
         .nav-logo {
-            height: 50px; 
-            width: auto;
+            height: 36px;
+            width: 36px;
             border-radius: 6px;
             object-fit: contain;
             border: 1px solid rgba(255,255,255,0.22);
         }
+
         .nav-links a {
             margin-right: 22px;
             text-decoration: none;
@@ -72,7 +52,11 @@ def add_top_nav():
             font-weight: 500;
             color: #e0f7ff !important;
         }
-        .nav-links a:hover { color: #00c4ff !important; }
+
+        .nav-links a:hover {
+            color: #00c4ff !important;
+        }
+
         .logout-btn {
             padding: 6px 18px;
             background: rgba(255,255,255,0.08);
@@ -86,12 +70,15 @@ def add_top_nav():
             border-color: #00c4ff;
         }
         </style>
-    """, unsafe_allow_html=True)
-
+        """,
+        unsafe_allow_html=True,
+    )
+    
     logo_b64 = load_base64_image("assets/logo1.png")
 
-    # Navbar HTML — FIXED BASE64 interpolation
-    st.markdown("""
+    # Navbar HTML
+    st.markdown(
+        """
         <div class="top-nav">
             <div class="nav-left">
                 <img src="data:image/png;base64,{logo_b64}" class="nav-logo">
@@ -102,20 +89,15 @@ def add_top_nav():
                     <a href="/pages/Profile" target="_self">Profile</a>
                 </div>
             </div>
+
             <button class="logout-btn" onclick="window.location.href='?logout=true'">Logout</button>
         </div>
-    """.format(logo_b64=logo_b64), unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
-    # Handle logout
+    # Logout logic
     if st.query_params.get("logout"):
-        # Clear browser storage
-        st.markdown("""
-        <script>
-        window.localStorage.removeItem("aicoach_user");
-        </script>
-        """, unsafe_allow_html=True)
-
-        # Clear session
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.session_state.user = None
@@ -137,29 +119,38 @@ def sanitize_user(user: dict):
 def apply_theme():
     st.set_page_config(layout="wide")
 
-    st.markdown("""
+    st.markdown(
+        """
     <style>
-    /* Remove Streamlit header padding */
+
+    /* ---------------- FIX TOP GAP COMPLETELY ---------------- */
+
+    /* Remove Streamlit default header spacing */
     header[data-testid="stHeader"] {
         display: none !important;
         height: 0 !important;
         min-height: 0 !important;
     }
 
-    /* Remove extra padding from containers */
-    [data-testid="stAppViewContainer"],
+    /* Remove padding + margin of ALL main containers */
+    [data-testid="stAppViewContainer"] {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+
     [data-testid="stAppViewBlockContainer"] {
         padding-top: 0 !important;
         margin-top: 0 !important;
     }
 
-    /* Pull main content upward under navbar */
+    /* Pull the Streamlit content UP under the fixed navbar */
     [data-testid="stAppViewContainer"] .main {
         margin-top: -70px !important;
         padding-top: 0 !important;
     }
 
-    /* Sidebar styling */
+    /* ---------------- SIDEBAR ---------------- */
+
     [data-testid="stSidebar"] {
         background: linear-gradient(180deg, #001933, #002447, #003366) !important;
         padding: 22px !important;
@@ -174,6 +165,7 @@ def apply_theme():
         border: 1px solid rgba(0,191,255,0.25) !important;
         color: #e0f7ff !important;
         transition: 0.15s ease-in-out;
+        font-size: 1rem !important;
         text-decoration: none !important;
     }
 
@@ -189,14 +181,20 @@ def apply_theme():
         font-weight: 700 !important;
     }
 
+    /* ---------------- MAIN BACKGROUND ---------------- */
+
     [data-testid="stAppViewContainer"] {
         background-color: #001230 !important;
     }
+
+    /* ---------------- GLOBAL TEXT ---------------- */
 
     html, body, p, span, div {
         color: #e0f7ff !important;
         font-family: "Segoe UI", sans-serif !important;
     }
+
+    /* ---------------- BUTTONS ---------------- */
 
     .stButton > button {
         background: rgba(255,255,255,0.06) !important;
@@ -213,8 +211,11 @@ def apply_theme():
         background: rgba(0,191,255,0.15) !important;
         border-color: rgba(0,191,255,0.7) !important;
     }
+
     </style>
-    """, unsafe_allow_html=True)
+    """,
+        unsafe_allow_html=True,
+    )
 
 
 # ---------------- CUSTOM SIDEBAR ----------------
@@ -249,12 +250,4 @@ def add_sidebar_navigation():
         if user:
             if st.button("Logout", use_container_width=True):
                 st.session_state.user = None
-
-                # Clear browser storage
-                st.markdown("""
-                <script>
-                window.localStorage.removeItem("aicoach_user");
-                </script>
-                """, unsafe_allow_html=True)
-
                 st.switch_page("app.py")

@@ -1,12 +1,12 @@
 import streamlit as st
-from Theme import apply_theme, add_top_nav, require_login
+from Theme import apply_theme, add_sidebar_navigation, require_login
 from question_loader import load_questions_for_role
 
 apply_theme()
 if "user" not in st.session_state:
     st.session_state.user = None
 require_login()
-add_top_nav()
+add_sidebar_navigation()
 
 # Validation
 required_keys = ["role", "experience", "difficulty", "question_mode"]

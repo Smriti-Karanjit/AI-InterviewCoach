@@ -59,8 +59,7 @@ def add_top_nav():
         }
         .nav-left { display: flex; align-items: center; gap: 14px; }
         .nav-logo {
-            height: 50px; 
-            width: auto;
+            height: 36px; width: 36px;
             border-radius: 6px;
             object-fit: contain;
             border: 1px solid rgba(255,255,255,0.22);

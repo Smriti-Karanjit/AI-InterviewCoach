@@ -1,70 +1,33 @@
 import streamlit as st
-import base64
-
-# ---------------- LOCAL STORAGE PERSISTENCE ----------------
-
-# Restore user from browser localStorage
-restore_user_js = """
-<script>
-const saved = window.localStorage.getItem("aicoach_user");
-if (saved) {
-    const parsed = JSON.parse(saved);
-    window.parent.postMessage({type: "restore_user", user: parsed}, "*");
-}
-</script>
-"""
-st.markdown(restore_user_js, unsafe_allow_html=True)
-
-# Handle restored user message
-if "_msg" not in st.session_state:
-    st.session_state._msg = {}
-
-def handle_restore():
-    msg = st.session_state.get("_msg")
-    if msg and msg.get("type") == "restore_user":
-        st.session_state.user = msg.get("user")
-
-handle_restore()
-
-
-# ---------------- TOP NAVBAR ----------------
-
-def load_base64_image(path):
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
 
 def add_top_nav():
-    """Sticky top navigation bar with logo, links, and logout."""
+    """
+    Displays a clean sticky top navigation bar for logged-in users.
+    Hidden on login and signup pages.
+    """
 
-    # Navbar should only show if user exists
+    # Do not show navbar if user is not logged in.
     if "user" not in st.session_state or st.session_state.user is None:
         return
 
-    # Navbar CSS
-    st.markdown("""
+    # --- STYLES ---
+    st.markdown(
+        """
         <style>
         .top-nav {
-            position: fixed;
+            position: sticky;
             top: 0;
-            left: 0;
             width: 100%;
             z-index: 999;
             background: rgba(0, 18, 48, 0.85);
             backdrop-filter: blur(10px);
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-bottom: 1px solid rgba(255,255,255,0.12);
             display: flex;
             justify-content: space-between;
             align-items: center;
         }
-        .nav-left { display: flex; align-items: center; gap: 14px; }
-        .nav-logo {
-            height: 50px; 
-            width: auto;
-            border-radius: 6px;
-            object-fit: contain;
-            border: 1px solid rgba(255,255,255,0.22);
-        }
+
         .nav-links a {
             margin-right: 22px;
             text-decoration: none;
@@ -72,7 +35,11 @@ def add_top_nav():
             font-weight: 500;
             color: #e0f7ff !important;
         }
-        .nav-links a:hover { color: #00c4ff !important; }
+
+        .nav-links a:hover {
+            color: #00c4ff !important;
+        }
+
         .logout-btn {
             padding: 6px 18px;
             background: rgba(255,255,255,0.08);
@@ -86,36 +53,29 @@ def add_top_nav():
             border-color: #00c4ff;
         }
         </style>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
-    logo_b64 = load_base64_image("assets/logo1.png")
-
-    # Navbar HTML — FIXED BASE64 interpolation
-    st.markdown("""
+    # --- HTML NAV BAR ---
+    st.markdown(
+        """
         <div class="top-nav">
-            <div class="nav-left">
-                <img src="data:image/png;base64,{logo_b64}" class="nav-logo">
-                <div class="nav-links">
-                    <a href="/app" target="_self">Home</a>
-                    <a href="/pages/Practice" target="_self">Practice</a>
-                    <a href="/pages/History" target="_self">History</a>
-                    <a href="/pages/Profile" target="_self">Profile</a>
-                </div>
+            <div class="nav-links">
+                <a href="/app" target="_self">Home</a>
+                <a href="/pages/Practice" target="_self">Practice</a>
+                <a href="/pages/History" target="_self">History</a>
+                <a href="/pages/Profile" target="_self">Profile</a>
             </div>
             <button class="logout-btn" onclick="window.location.href='?logout=true'">Logout</button>
         </div>
-    """.format(logo_b64=logo_b64), unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True,
+    )
 
-    # Handle logout
+    # --- HANDLE LOGOUT ---
     if st.query_params.get("logout"):
-        # Clear browser storage
-        st.markdown("""
-        <script>
-        window.localStorage.removeItem("aicoach_user");
-        </script>
-        """, unsafe_allow_html=True)
-
-        # Clear session
+        # clear session
         for key in list(st.session_state.keys()):
             del st.session_state[key]
         st.session_state.user = None
@@ -123,15 +83,18 @@ def add_top_nav():
         st.experimental_rerun()
 
 
-# ---------------- AUTH DISABLED ----------------
+# ---------------- NO LOGIN PROTECTION (DISABLED) ----------------
 def require_login():
+    # NO AUTH CHECK ANYMORE
+    # You said: “I just want my app to work without login logic”
     pass
 
-
-# ---------------- FORMAT USER ----------------
+# ---------------- CLEAN USER DICT ----------------
 def sanitize_user(user: dict):
-    return {k: ("" if v is None else v) for k, v in user.items()}
-
+    clean = {}
+    for key, value in user.items():
+        clean[key] = "" if value is None else value
+    return clean
 
 # ---------------- GLOBAL THEME ----------------
 def apply_theme():
@@ -139,25 +102,6 @@ def apply_theme():
 
     st.markdown("""
     <style>
-    /* Remove Streamlit header padding */
-    header[data-testid="stHeader"] {
-        display: none !important;
-        height: 0 !important;
-        min-height: 0 !important;
-    }
-
-    /* Remove extra padding from containers */
-    [data-testid="stAppViewContainer"],
-    [data-testid="stAppViewBlockContainer"] {
-        padding-top: 0 !important;
-        margin-top: 0 !important;
-    }
-
-    /* Pull main content upward under navbar */
-    [data-testid="stAppViewContainer"] .main {
-        margin-top: -70px !important;
-        padding-top: 0 !important;
-    }
 
     /* Sidebar styling */
     [data-testid="stSidebar"] {
@@ -174,6 +118,7 @@ def apply_theme():
         border: 1px solid rgba(0,191,255,0.25) !important;
         color: #e0f7ff !important;
         transition: 0.15s ease-in-out;
+        font-size: 1rem !important;
         text-decoration: none !important;
     }
 
@@ -198,6 +143,7 @@ def apply_theme():
         font-family: "Segoe UI", sans-serif !important;
     }
 
+    /* Button styling (YOUR ORIGINAL LOOK) */
     .stButton > button {
         background: rgba(255,255,255,0.06) !important;
         backdrop-filter: blur(10px);
@@ -213,15 +159,21 @@ def apply_theme():
         background: rgba(0,191,255,0.15) !important;
         border-color: rgba(0,191,255,0.7) !important;
     }
+
+    header[data-testid="stHeader"] {
+        display: none !important;
+    }
+
     </style>
     """, unsafe_allow_html=True)
-
 
 # ---------------- CUSTOM SIDEBAR ----------------
 def add_sidebar_navigation():
     user = st.session_state.get("user")
 
     with st.sidebar:
+
+        # Username header
         if user and "username" in user:
             st.markdown(
                 f"""
@@ -237,9 +189,10 @@ def add_sidebar_navigation():
                     👋 Welcome, {user['username']}
                 </div>
                 """,
-                unsafe_allow_html=True,
+                unsafe_allow_html=True
             )
 
+        # Navigation
         st.page_link("pages/Practice.py", label="🎙️ Practice Mode")
         st.page_link("pages/Progress.py", label="📈 Progress Tracker")
         st.page_link("pages/Profile.py", label="⚙️ Profile Setup")
@@ -249,12 +202,4 @@ def add_sidebar_navigation():
         if user:
             if st.button("Logout", use_container_width=True):
                 st.session_state.user = None
-
-                # Clear browser storage
-                st.markdown("""
-                <script>
-                window.localStorage.removeItem("aicoach_user");
-                </script>
-                """, unsafe_allow_html=True)
-
                 st.switch_page("app.py")

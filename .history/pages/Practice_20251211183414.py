@@ -1,6 +1,6 @@
 import streamlit as st
 import base64, os
-from Theme import apply_theme, require_login,add_top_nav
+from Theme import apply_theme, add_sidebar_navigation, require_login,add_top_nav
 
 # Session init
 if "user" not in st.session_state:

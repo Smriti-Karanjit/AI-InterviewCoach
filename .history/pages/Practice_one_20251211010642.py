@@ -1,12 +1,17 @@
 import streamlit as st
+import json
 import tempfile
 import pandas as pd
 
-# THEME + SIDEBAR
-from Theme import apply_theme, add_top_nav  
+# THEME + SIDEBAR (NO LOGIN ENFORCEMENT)
+from Theme import apply_theme, add_sidebar_navigation  
+
+# MODEL / PROCESSING
 from prosody_extractor import extract_prosodic_features
 from model_loader import predict_traits_from_prosody
 from database import save_interview_result
+
+# GPT FEEDBACK GENERATION
 from pages.gpt_feedback import generate_prosody_feedback, generate_text_feedback
 
 
@@ -14,7 +19,7 @@ from pages.gpt_feedback import generate_prosody_feedback, generate_text_feedback
 # BASE THEME + SIDEBAR
 # -------------------------------------------------
 apply_theme()
-add_top_nav()
+add_sidebar_navigation()
 
 # -------------------------------------------------
 # SAFE USER HANDLING
@@ -30,23 +35,32 @@ if "selected_question_index" not in st.session_state:
     st.error("Please select a question first.")
     st.stop()
 
-if "filtered_questions" not in st.session_state:
-    st.error("Missing question data. Please go back.")
+if "role" not in st.session_state:
+    st.error("Incomplete flow. Please start again.")
     st.stop()
 
 
-questions = st.session_state.filtered_questions
-idx = st.session_state.selected_question_index
+# -------------------------------------------------
+# LOAD QUESTIONS
+# -------------------------------------------------
+@st.cache_data
+def load_questions():
+    with open("data/hr_interview_questions_dataset.json", "r", encoding="utf-8") as f:
+        return json.load(f)
 
-if idx >= len(questions):
-    st.error("Invalid question index. Restart practice.")
-    st.stop()
+question_bank = load_questions()
 
-current_question = questions[idx]["question"]
 role = st.session_state.role
 experience = st.session_state.experience
 difficulty = st.session_state.difficulty
 qmode = st.session_state.question_mode
+questions = st.session_state.get("filtered_questions", [])
+
+if not questions:
+    st.error("Questions not found in session. Please restart practice.")
+    st.stop()
+
+current_question = questions[idx]["question"]
 
 
 # -------------------------------------------------
@@ -101,7 +115,7 @@ def save_temp_audio(uploaded_file):
 
 
 # -------------------------------------------------
-# SUBMIT ANSWER BUTTON
+# SUBMIT ANSWER BUTTON (FULL WIDTH)
 # -------------------------------------------------
 if st.button("Submit Answer", use_container_width=True):
 
@@ -111,17 +125,21 @@ if st.button("Submit Answer", use_container_width=True):
 
     st.session_state.last_answer = user_text
 
+    prosody_series = None
     prosody_features = {}
     trait_scores = {}
 
     # -------------------- VOICE ANALYSIS --------------------
     if audio_input:
         st.info("⏳ Extracting prosodic features…")
+
         audio_path = save_temp_audio(audio_input)
         prosody_series = extract_prosodic_features(audio_path)
         prosody_features = prosody_series.to_dict()
 
         st.success("🎯 Voice features extracted!")
+
+        # Predict Traits
         trait_scores = predict_traits_from_prosody(prosody_series)
 
     # -------------------- NUMERIC SCORES --------------------
@@ -140,28 +158,45 @@ if st.button("Submit Answer", use_container_width=True):
 
     # -------------------- GPT FEEDBACK --------------------
     if trait_scores:
+        st.info("🧠 Generating voice-based communication feedback…")
         pf = generate_prosody_feedback(trait_scores)
+
         st.markdown("## 🗣️ Voice-Based Communication Feedback")
         st.write("### Summary")
         st.write(pf.get("summary", ""))
+
         st.write("### Strengths")
-        st.write("\n".join(f"- {s}" for s in pf.get("strengths", [])))
+        for s in pf.get("strengths", []):
+            st.write(f"- {s}")
+
         st.write("### Areas to Improve")
-        st.write("\n".join(f"- {s}" for s in pf.get("improvements", [])))
+        for s in pf.get("improvements", []):
+            st.write(f"- {s}")
+
         st.write("### Actionable Tips")
-        st.write("\n".join(f"- {s}" for s in pf.get("action_items", [])))
+        for s in pf.get("action_items", []):
+            st.write(f"- {s}")
 
     if user_text:
+        st.info("🧠 Analyzing your written answer…")
         tf = generate_text_feedback(user_text)
+
         st.markdown("## 📝 Text-Based Feedback")
         st.write("### Summary")
         st.write(tf.get("summary", ""))
+
         st.write("### Strengths")
-        st.write("\n".join(f"- {s}" for s in tf.get("strengths", [])))
+        for s in tf.get("strengths", []):
+            st.write(f"- {s}")
+
         st.write("### Improvements")
-        st.write("\n".join(f"- {s}" for s in tf.get("improvements", [])))
+        for s in tf.get("improvements", []):
+            st.write(f"- {s}")
+
         st.write("### Missing Points")
-        st.write("\n".join(f"- {s}" for s in tf.get("missing_points", [])))
+        for s in tf.get("missing_points", []):
+            st.write(f"- {s}")
+
         st.write(f"### Score: **{tf.get('score', '?')}/10**")
 
     # -------------------- SAVE TO DB --------------------
@@ -177,17 +212,22 @@ if st.button("Submit Answer", use_container_width=True):
         "prosodic_features": prosody_features
     })
 
-    # -------------------- NEXT QUESTION --------------------
-    if idx + 1 < len(questions):
+    # Track completed question
+    st.session_state.completed_questions = st.session_state.get("completed_questions", set())
+    st.session_state.completed_questions.add(idx)
+
+    # Move to next question
+    if idx < len(questions) - 1:
+        st.success("Answer saved! Moving to the next question… ⏭️")
         st.session_state.selected_question_index = idx + 1
         st.rerun()
     else:
         st.balloons()
-        st.success("🎉 You've completed all questions!")
+        st.success("🎉 You've completed all practice questions!")
 
 
 # -------------------------------------------------
-# BACK BUTTON
+# BACK BUTTON (FULL WIDTH)
 # -------------------------------------------------
 if st.button("⬅ Back to Question List", use_container_width=True):
     st.switch_page("pages/Practice_Question.py")

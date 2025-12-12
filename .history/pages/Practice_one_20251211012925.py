@@ -3,7 +3,7 @@ import tempfile
 import pandas as pd
 
 # THEME + SIDEBAR
-from Theme import apply_theme, add_top_nav  
+from Theme import apply_theme, add_sidebar_navigation  
 from prosody_extractor import extract_prosodic_features
 from model_loader import predict_traits_from_prosody
 from database import save_interview_result
@@ -14,7 +14,7 @@ from pages.gpt_feedback import generate_prosody_feedback, generate_text_feedback
 # BASE THEME + SIDEBAR
 # -------------------------------------------------
 apply_theme()
-add_top_nav()
+add_sidebar_navigation()
 
 # -------------------------------------------------
 # SAFE USER HANDLING

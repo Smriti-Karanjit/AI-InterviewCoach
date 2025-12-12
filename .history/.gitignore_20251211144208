@@ -1,0 +1,7 @@
+__pycache__/
+.history/
+*.pyc
+*.tmp
+*.log
+.env
+firebase_admin_key.json

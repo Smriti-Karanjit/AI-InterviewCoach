@@ -3,6 +3,7 @@ from firebase_client import firebase_login, firebase_signup, get_firestore
 
 db = get_firestore()
 
+
 # --------------------------
 # CHECK IF USERNAME EXISTS
 # --------------------------
@@ -20,20 +21,20 @@ def username_exists(username: str):
 # REGISTER USER (3 ARGUMENTS)
 # --------------------------
 def register_user(email: str, username: str, password: str):
-    """Create Firebase Auth user + store username & email in Firestore."""
+    """Create Firebase Auth user + store username/email in Firestore."""
     try:
         auth_data = firebase_signup(email, password)
 
-        user_data = {
-            "email": email,
+        user_record = {
             "username": username,
+            "email": email,
             "localId": auth_data["localId"]
         }
 
-        # Save in Firestore under users/localId
-        db.collection("users").document(auth_data["localId"]).set(user_data)
+        # Save in Firestore
+        db.collection("users").document(auth_data["localId"]).set(user_record)
 
-        return user_data
+        return user_record
 
     except Exception as e:
         st.error(f"Signup failed: {e}")
@@ -41,7 +42,7 @@ def register_user(email: str, username: str, password: str):
 
 
 # --------------------------
-# AUTHENTICATE USER
+# LOGIN USER (2 ARGUMENTS)
 # --------------------------
 def authenticate_user(email: str, password: str):
     try:

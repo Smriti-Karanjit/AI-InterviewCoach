@@ -21,6 +21,12 @@ if st.session_state.user is None:
         </style>
     """, unsafe_allow_html=True)
 
+    # HEADER
+    st.markdown(
+        "<h2 style='text-align:center; margin-top:20px;'>AI Interview Coach</h2>",
+        unsafe_allow_html=True
+    )
+
     st.image("assets/logo1.png", use_container_width=True)
 
     st.markdown("<h3 style='text-align:center;'>Login to your account</h3>", unsafe_allow_html=True)

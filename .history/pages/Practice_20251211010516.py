@@ -1,6 +1,6 @@
 import streamlit as st
 import base64, os
-from Theme import apply_theme, require_login,add_top_nav
+from Theme import apply_theme, add_sidebar_navigation, require_login
 
 # Session init
 if "user" not in st.session_state:
@@ -8,7 +8,7 @@ if "user" not in st.session_state:
 
 apply_theme()
 require_login()
-add_top_nav()
+add_sidebar_navigation()
 
 st.markdown("<h2 style='text-align:center;'>Practice Mode</h2>", unsafe_allow_html=True)
 

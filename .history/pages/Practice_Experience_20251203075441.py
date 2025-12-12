@@ -5,12 +5,11 @@ if "user" not in st.session_state:
     st.session_state.user = None
 
 # ---------- IMPORT THEME ----------
-from Theme import apply_theme, add_top_nav
-
+from Theme import apply_theme, add_sidebar_navigation
 
 # ---------- THEME & SIDEBAR ----------
 apply_theme()
-add_top_nav()
+add_sidebar_navigation()
 
 # ---------- VALIDATION ----------
 if "role" not in st.session_state or st.session_state.role is None:

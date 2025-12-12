@@ -1,8 +1,8 @@
 import streamlit as st
-from Theme import apply_theme, add_top_nav
+from Theme import apply_theme, add_sidebar_navigation
 
 apply_theme()
-add_top_nav()
+add_sidebar_navigation()
 
 if "role" not in st.session_state or st.session_state.role is None:
     st.error("Please select a role first.")

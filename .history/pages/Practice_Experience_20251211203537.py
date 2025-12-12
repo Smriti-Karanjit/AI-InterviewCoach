@@ -10,6 +10,7 @@ from Theme import apply_theme, add_top_nav
 
 # ---------- THEME & SIDEBAR ----------
 apply_theme()
+add_sidebar_navigation()
 add_top_nav()
 
 # ---------- VALIDATION ----------
