@@ -1,9 +1,9 @@
-***AI Interview Coach***
+# AI Interview Coach
 
 An interactive interview practice system built with Streamlit, NLP, and audio prosody analysis.
 Users practice questions, record answers, and receive instant AI-powered feedback on clarity, confidence, fluency, and content quality.
 
-***🚀 Features***
+## 🚀 Features
 
 * Role-based interview questions (Data Scientist, QA, SE, etc.)
 
@@ -19,7 +19,7 @@ Users practice questions, record answers, and receive instant AI-powered feedbac
 
 * Multi-step workflow (Role → Experience → Difficulty → Question → Feedback)
 
-***🏗 Tech Stack***
+## 🏗 Tech Stack
 
 **Frontend**
 
@@ -53,7 +53,7 @@ Users practice questions, record answers, and receive instant AI-powered feedbac
 
 * Role-based question loader
 
-***Project Structure*** <br>
+## Project Structure<br>
 AI Interview Coach/ <br>
 │<br>
 ├── pages/<br>
@@ -75,21 +75,21 @@ AI Interview Coach/ <br>
 ├── database.py<br>
 └── README.md<br>
 
-***📘 Example Workflow***  <br>
+## 📘 Example Workflow <br>
 
 1️⃣ Choose a role <br>
 2️⃣ Select experience, difficulty, question mode<br>
 3️⃣ Pick a question<br>
 4️⃣ Type or record your answer<br>
 5️⃣ Get instant AI feedback:<br>
-    * GPT text evaluation<br>
-    * Prosody-based voice metrics<br>
-    * Strengths & improvements <br>
-    * Score out of 10<br>
-    * 1GB original dataset split into multiple JSON chunks<br>
-    * Cached loading for performance
+   * GPT text evaluation<br>
+   * Prosody-based voice metrics<br>
+   * Strengths & improvements <br>
+   * Score out of 10<br>
+   * 1GB original dataset split into multiple JSON chunks<br>
+   * Cached loading for performance
 
-***🚧 Future Improvements***<br>
+## 🚧 Future Improvements<br>
 
 * Add mock interview mode with timed questions
 * Add performance history dashboard
