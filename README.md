@@ -89,6 +89,10 @@ AI Interview Coach/ <br>
    * 1GB original dataset split into multiple JSON chunks<br>
    * Cached loading for performance
 
+## Snapshot of UI
+<img src="Climate Change Dashboard/assets/screenshots/Screenshot 2024-11-18 153514.png" width="600">
+<br><br>
+
 ## 🚧 Future Improvements<br>
 
 * Add mock interview mode with timed questions
