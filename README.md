@@ -90,7 +90,7 @@ AI Interview Coach/ <br>
    * Cached loading for performance
 
 ## Snapshot of UI
-<img src="Climate Change Dashboard/assets/screenshots/Screenshot 2024-11-18 153514.png" width="600">
+<img src="assets/Screenshot 2025-12-13 232039.png" width="1000">
 <br><br>
 
 ## 🚧 Future Improvements<br>
